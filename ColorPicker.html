@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+	<head>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js"></script>
+		<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css' />
+	</head>
+
+	<body>
+		<script type="text/javascript">
+			$(document).ready(function () {
+				$("<input type='text' id='preferredHex'/>").insertAfter("input[title=Color]");
+				var color = $("#Color").parent().parent().find("input").val();
+				$("#preferredHex").spectrum({
+					preferredFormat: "hex",
+					showInput: true,
+					showPalette: true,
+					chooseText: "Select This Color",
+					cancelText: "Cancel",
+					color: color,
+					hide: function (color) {
+						$("input[title='Color']").val(color.toHexString()); // #ff0000
+					},
+					palette: [
+						["#ee4035", "#f37736", "#fdf498", "#7bc043", "#0392cf", "#ffbe4f", "#6bd2db", "#0ea7b5", "#0c457d", "#e8702a"]
+					]
+				});
+				$("#preferredHex").spectrum("get");
+			});
+		</script>
+	</body>
+</html>

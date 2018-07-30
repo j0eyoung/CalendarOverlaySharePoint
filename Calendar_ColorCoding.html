@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+	<head>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.SPServices/2014.02/jquery.SPServices.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+			var types = [];
+			var css = '<style type="text/css">';
+			$(document).ready(function () {
+				// Retrieve the list of calendar event categories and any associated colorations for respective types
+				$().SPServices({
+					operation: "GetListItems",
+					async: false,
+					listName: "Lookup_EventType",
+					CAMLViewFields: "<ViewFields><FieldRef Name='Title' /><FieldRef Name='Color' /></ViewFields>",
+					completefunc: function (xData, Status) {
+						$(xData.responseXML).SPFilterNode("z:row").each(function () {
+							//types[types.length] = [$(this).attr("ows_Title"),$(this).attr("ows_Color")];
+							//console.log($(this).attr("ows_Title"));
+							// If there is no color in the CalendarEventCategories list specified, hash the type and get a color for it and make it darker
+							types[types.length] = [$(this).attr("ows_Title"), ($(this).attr("ows_Color") == null ? lightenDarkenColor(
+								intToRGB(hashCode($(this).attr("ows_Title"))), -50) : $(this).attr("ows_Color"))];
+						});
+					}
+				});
+				// Build color coding legend
+				var legend = "<fieldset><legend>Calendar Legend</legend>";
+				// Loop through and build the css style element selectors
+				for (var i = 0; i < types.length; i++) {
+					css += 'div[title*="(' + types[i][0] + ')"]{background-color:' + types[i][1] + ' !important;}';
+					legend += "<div style='margin-bottom:2px;text-align: center;background-color:" + types[i][1] +
+						";'><span style='padding:4px;color:white;'>" + types[i][0] + "</span></div>";
+				}
+				legend += "</fieldset>";
+				// Append color coding legend
+				$("li > a > span:contains('Calendars in View')").parent().parent().append($(legend));
+				// Append the css style sheet to the head of the document
+				$('head').append(css);
+			});
+
+			// The following functions were taken from stack overflow and are used to build a hash
+			// 		hex color string of the calendar event type in order to always have a uniue color for
+			// 		each event 
+			function hashCode(str) { // java String#hashCode
+				var hash = 0;
+				for (var i = 0; i < str.length; i++) {
+					hash = str.charCodeAt(i) + ((hash << 5) - hash);
+				}
+				return hash;
+			}
+
+			function intToRGB(i) {
+				var c = (i & 0x00FFFFFF)
+					.toString(16)
+					.toUpperCase();
+				return "#" + "00000".substring(0, 6 - c.length) + c;
+			}
+
+			// Produces a darker version of the hash hex color code 
+			function lightenDarkenColor(col, amt) {
+				var usePound = false;
+				if (col[0] == "#") {
+					col = col.slice(1);
+					usePound = true;
+				}
+				var num = parseInt(col, 16);
+				var r = (num >> 16) + amt;
+				if (r > 255) {
+					r = 255;
+				} else if (r < 0) {
+					r = 0;
+				}
+				var b = ((num >> 8) & 0x00FF) + amt;
+				if (b > 255) {
+					b = 255;
+				} else if (b < 0) {
+					b = 0;
+				}
+				var g = (num & 0x0000FF) + amt;
+				if (g > 255) {
+					g = 255;
+				} else if (g < 0) {
+					g = 0;
+				}
+				return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
+			}
+		</script>
+	</body>
+</html>
